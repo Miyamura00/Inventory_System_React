@@ -27,6 +27,7 @@ const Sidebar = () => {
                     icon={item.icon}    
                     text={item.text}
                     isOpen={isOpen}
+                    path={item.path}
                     setIsOpen={setIsOpen}
                     />
                 ))}

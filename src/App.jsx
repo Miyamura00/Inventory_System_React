@@ -1,15 +1,21 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Sidebar from "./components/sidebar"
+import Dashboard from "./pages/Dashboard"
+import Assets from "./pages/Assets"
 
 const App = () => {
   return (
-    <div className="flex">
-    <Sidebar />
-      <div className="flex-1 min-h-screen bg-lightblue flex items-center
-      justify-center">
-        <h1 className="text-3x1 font-bold">The Greatest Cat Ever</h1>
-      </div>
-    </div>
-  
+    <Router>
+      <div className="flex h-screen ">
+        <Sidebar />
+        <div className="flex-1">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/assets" element={<Assets />} />
+          </Routes>
+        </div>
+        </div>
+    </Router>
   )
 }
 
