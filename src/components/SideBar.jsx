@@ -4,7 +4,7 @@ import { FaBars } from 'react-icons/fa'
 import { menuItems } from '../Data';
 import NavItem from './NavItem';
 import { Tooltip } from 'react-tooltip';
-import Assets from '../pages/Assets';
+
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState (false);
