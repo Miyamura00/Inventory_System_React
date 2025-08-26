@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
+import { useAssets } from '../hooks/useAssets'
 
 const Assets = () => {
 
-    const [assets, setAssets] = useState([])
+    const {assets, setAssets} = useAssets()
     const [formData, setFormData] = useState({
       modelName:"",
       brandName:"",

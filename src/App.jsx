@@ -6,10 +6,12 @@ import Assets from "./pages/Assets"
 import AddUser from "./pages/AddUser"
 import Settings from "./pages/Settings"
 import Reports from "./pages/Reports"
+import { AssetProvider } from "./context/AssetContext"
 
 const App = () => {
   return (
     <Router>
+       <AssetProvider>
       <div className="flex h-screen ">
         <Sidebar />
         <div className="flex-1 flex flex-col">
@@ -25,7 +27,9 @@ const App = () => {
         </div>
         </div>
         </div>
+        </AssetProvider>
     </Router>
+   
   )
 }
 

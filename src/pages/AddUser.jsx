@@ -24,6 +24,7 @@ const handleSubmit = (e) => {
 }
 
   return (
+    <div className='p-6'>
     <div className="mt-6 ml-6 w-full max-w-md bg-white shadow-lg rounded-xl p-6 bg-cyan-500/50 shadow-lg shadow-cyan-500/50">
       <h2 className="font-bold">Create Account</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -72,6 +73,12 @@ const handleSubmit = (e) => {
         </button>
       </form>
     </div>
+     <div className='mt-10 bg-white shadow-lg rounded-xl p-6 bg-cyan-500/50 shadow-cyan-500/50'>
+      <h3 className='text-xl font-semibold mb-4'>Accounts</h3>
+
+      </div>
+    </div>
+    
   )
 }
 
