@@ -8,6 +8,8 @@ const [formData,setFormData] = useState({
     confirmpassword:""
 })
 
+const [users, setUsers] = useState([])
+
 const handleChange = (e) => {
   const {name, value} = e.target;
   setFormData((prev) => ({...prev, [name]:value}))
@@ -20,7 +22,16 @@ const handleSubmit = (e) => {
     alert("Password do not match!")
     return
   }
+
+  setUsers((prev) => [...prev, {name: formData.name, email: formData.email}])
   alert("Account Created Successfully")
+
+  setFormData({
+    name: "",
+    email: "",
+    password: "",
+    confirmpassword: ""
+  })
 }
 
   return (
@@ -59,13 +70,14 @@ const handleSubmit = (e) => {
 
         <input 
         type="password"
-        name="confirmPassword"
+        name="confirmpassword"
         placeholder="Confirm Password"
         value={formData.confirmpassword}
         onChange={handleChange}
         required
         className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
+
         <button type="submit"
         className='bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition'
         >
@@ -75,10 +87,28 @@ const handleSubmit = (e) => {
     </div>
      <div className='mt-10 bg-white shadow-lg rounded-xl p-6 bg-cyan-500/50 shadow-cyan-500/50'>
       <h3 className='text-xl font-semibold mb-4'>Accounts</h3>
-
+        {users.length === 0 ? (
+          <p className="text-gray-500">No Accounts added yet.</p>
+        ) : (
+          <table className="w-full border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border px-4 py-2">Name</th>
+                <th className="border px-4 py-2">Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user, i) => (
+                <tr key={i}>
+                  <td className="border px-4 py-2">{user.name}</td>
+                  <td className="border px-4 py-2">{user.email}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
-    </div>
-    
+    </div> 
   )
 }
 

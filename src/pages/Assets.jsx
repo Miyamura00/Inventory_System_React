@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { useAssets } from '../hooks/useAssets'
+import { useAssetContext } from '../hooks/useAssetContext'
 
 const Assets = () => {
 
-    const {assets, setAssets} = useAssets()
+    const {assets, setAssets} = useAssetContext()
     const [formData, setFormData] = useState({
       modelName:"",
       brandName:"",
@@ -36,7 +36,7 @@ const Assets = () => {
       }
 
       setAssets((prev) => [...prev, formData])
-      alert("Asset added sucessfully")
+      alert("Asset added successfully")
 
       setFormData({
       modelName:"",
@@ -54,7 +54,7 @@ const Assets = () => {
   return (
       <div className='p-6'>
         <div className='w-full max-w-3xl bg-white shadow-lg rounded-xl p-6 mb-6'>
-        <h2 className='text-2x1 font-bold mb-4 text-center'>Add Asset</h2>
+        <h2 className='text-2xl font-bold mb-4 text-center'>Add Asset</h2>
         <form onSubmit={handleSubmit} className='grid grid-cols-2 gap-4'>
         <input 
           type="text"

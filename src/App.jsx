@@ -6,7 +6,7 @@ import Assets from "./pages/Assets"
 import AddUser from "./pages/AddUser"
 import Settings from "./pages/Settings"
 import Reports from "./pages/Reports"
-import { AssetProvider } from "./context/AssetContext"
+import { AssetProvider } from "./context/AssetProvider"
 
 const App = () => {
   return (
