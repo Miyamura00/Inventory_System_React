@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
+import CreateAccount from '../components/buttons/CreateAccount'
 
 const AddUser = () => {
-const [formData,setFormData] = useState({
+const [formData, setFormData] = useState({
     name:"",
     email:"",
     password:"",
@@ -9,6 +10,7 @@ const [formData,setFormData] = useState({
 })
 
 const [users, setUsers] = useState([])
+const [open, setOpen] = useState(false)
 
 const handleChange = (e) => {
   const {name, value} = e.target;
@@ -32,11 +34,18 @@ const handleSubmit = (e) => {
     password: "",
     confirmpassword: ""
   })
+  setOpen(false)
 }
 
   return (
     <div className='p-6'>
-    <div className="mt-6 ml-6 w-full max-w-md bg-white shadow-lg rounded-xl p-6 bg-cyan-500/50 shadow-lg shadow-cyan-500/50">
+    <CreateAccount onClick={() => setOpen(true)} />
+    {open && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={() => setOpen(false)}>
+      <div className='w-full max-w-md rounded-xl bg-white p-6 shadow-lg'
+           onClick={(e) => e.stopPropagation()}
+      >
       <h2 className="font-bold">Create Account</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
@@ -77,14 +86,25 @@ const handleSubmit = (e) => {
         required
         className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
-
+        <div className='flex justify-end space-x-2'>
+        <button
+         type="button"
+        onClick={() => setOpen(false)}
+        className='rounded-lg border px-4 py-2 text-gray-600 hover:bg-gray-100'
+        >
+        Cancel
+        </button>
         <button type="submit"
-        className='bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition'
+        className='rounded-lg bg-sky-500 px-4 py-2 text-white hover:bg-sky-600'
         >
           Register
         </button>
+        </div>
       </form>
     </div>
+    </div>
+    )}
+    
      <div className='mt-10 bg-white shadow-lg rounded-xl p-6 bg-cyan-500/50 shadow-cyan-500/50'>
       <h3 className='text-xl font-semibold mb-4'>Accounts</h3>
         {users.length === 0 ? (

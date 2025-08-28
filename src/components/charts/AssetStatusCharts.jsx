@@ -3,7 +3,7 @@ import { useAssetContext } from "../../hooks/useAssetContext";
 
 
 const COLORS ={
-     "In Stock": "#4F46E5",    
+  "In Stock": "#4F46E5",    
   "Available": "#3B82F6",   
   "Maintenance": "#F59E0B", 
   "Out of Stock": "#EF4444" 
