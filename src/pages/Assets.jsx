@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useAssetContext } from '../hooks/useAssetContext'
-
+import ButtonAsset from '../components/buttons/ButtonAsset'
 const Assets = () => {
 
     const {assets, setAssets} = useAssetContext()
@@ -16,6 +16,7 @@ const Assets = () => {
       tag:""
 
     })
+    const [open, setOpen] =useState()
 
     const handleChange = (e) => {
       const {name, value} = e.target;
@@ -49,11 +50,19 @@ const Assets = () => {
       serialNumber:"",
       tag:""
       })
+
+      setOpen(false)
     }
     
   return (
-      <div className='p-6'>
-        <div className='w-full max-w-3xl bg-white shadow-lg rounded-xl p-6 mb-6'>
+      <div className='p-6'> 
+      <ButtonAsset onClick={() => setOpen(true)}/>
+        {open && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setOpen(false)}>
+        <div className='w-full max-w-3xl bg-white shadow-lg rounded-xl p-6 mb-6'
+         onClick={(e) => e.stopPropagation()}
+        >
         <h2 className='text-2xl font-bold mb-4 text-center'>Add Asset</h2>
         <form onSubmit={handleSubmit} className='grid grid-cols-2 gap-4'>
         <input 
@@ -139,14 +148,26 @@ const Assets = () => {
             className="border rounded-lg p-2 col-span-2"
           />
 
+          <div className='flex justify-center gap-4 col-span-2 mt-4'>
+             <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className='px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors'
+        >
+        Cancel
+        </button>
             <button
             type="submit"
-            className="bg-blue-600 text-white py-2 rounded-lg col-span-2 hover:bg-blue-700 transition"
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
           >
             Add Asset
           </button>
+          </div>
         </form>
         </div>
+        </div>
+        )}
+        
 
          <div className="bg-white shadow-md rounded-xl p-6">
         <h3 className="text-xl font-semibold mb-4">Assets List</h3>
