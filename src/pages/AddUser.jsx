@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import axios from 'axios'
 import CreateAccount from '../components/buttons/CreateAccount'
 
 const AddUser = () => {
@@ -11,31 +12,69 @@ const [formData, setFormData] = useState({
 
 const [users, setUsers] = useState([])
 const [open, setOpen] = useState(false)
+const [loading, setLoading] = useState(false) 
+
+const designations = ['Super Admin', 'Admin', 'Staff']
 
 const handleChange = (e) => {
   const {name, value} = e.target;
   setFormData((prev) => ({...prev, [name]:value}))
 }
 
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
+  setLoading(true)
 
   if (formData.password !== formData.confirmpassword){
     alert("Password do not match!")
+    setLoading(false)
     return
   }
 
-  setUsers((prev) => [...prev, {name: formData.name, email: formData.email}])
-  alert("Account Created Successfully")
+  if(formData.password.length < 6){
+    alert("Password must be at least 6 characters long!")
+    setLoading(false)
+    return
+  }
 
-  setFormData({
-    name: "",
-    email: "",
-    password: "",
-    confirmpassword: ""
-  })
-  setOpen(false)
+  try{
+    const response = await axios.post('http://localhost:5000/api/users/register', {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      designation: formData.designation
+    })
+
+      if (response.data.success) {
+        setUsers((prev) => [...prev, {
+          id: response.data.user.id,
+          name: formData.name,
+          email: formData.email,
+          designation: formData.designation,
+          createdAt: new Date().toLocaleDateString()
+        }])
+        alert("Account Created Successfully")
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          confirmpassword: "",
+          designation: "Staff"
+        })
+        setOpen(false)
+      }
+    }catch(error){
+      console.error("Registration Error:", error);
+      if(error.response?.data?.message){
+        alert(error.response.data.message);
+      }else{
+        alert("Failed to create account. Please try again")
+      }
+    }finally{
+      setLoading(false)
+    }
 }
+
 
   return (
     <div className='p-6'>
@@ -55,7 +94,9 @@ const handleSubmit = (e) => {
         value={formData.name}
         onChange={handleChange}
         required
-        className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+        disabled={loading}
+        />
       
         <input 
         type="text"
@@ -65,7 +106,24 @@ const handleSubmit = (e) => {
         onChange={handleChange}
         required
         className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        disabled={loading}
         />
+
+         <select
+                name="designation"
+                value={formData.designation}
+                onChange={handleChange}
+                required
+                className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                disabled={loading}
+              >
+                {designations.map((designation) => (
+                  <option key={designation} value={designation}>
+                    {designation}
+                  </option>
+                ))}
+              </select>
+
 
         <input 
         type="password"
@@ -75,6 +133,7 @@ const handleSubmit = (e) => {
         onChange={handleChange}
         required
         className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        disabled={loading}
         />
 
         <input 
@@ -85,19 +144,23 @@ const handleSubmit = (e) => {
         onChange={handleChange}
         required
         className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        disabled={loading}
         />
+
         <div className='flex justify-end space-x-2'>
         <button
          type="button"
         onClick={() => setOpen(false)}
         className='rounded-lg border px-4 py-2 text-gray-600 hover:bg-gray-100'
+        disabled={loading}
         >
         Cancel
         </button>
         <button type="submit"
         className='rounded-lg bg-sky-500 px-4 py-2 text-white hover:bg-sky-600'
+        disabled={loading}
         >
-          Register
+        {loading ? 'Creating...' : 'Register'}
         </button>
         </div>
       </form>
@@ -105,27 +168,41 @@ const handleSubmit = (e) => {
     </div>
     )}
     
-     <div className='mt-10 bg-white shadow-lg rounded-xl p-6 bg-cyan-500/50 shadow-cyan-500/50'>
-      <h3 className='text-xl font-semibold mb-4'>Accounts</h3>
+      <div className='mt-10 bg-white shadow-lg rounded-xl p-6 bg-cyan-500/10'>
+        <h3 className='text-xl font-semibold mb-4'>User Accounts</h3>
         {users.length === 0 ? (
-          <p className="text-gray-500">No Accounts added yet.</p>
+          <p className="text-gray-500">No accounts added yet.</p>
         ) : (
-          <table className="w-full border">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border px-4 py-2">Name</th>
-                <th className="border px-4 py-2">Email</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, i) => (
-                <tr key={i}>
-                  <td className="border px-4 py-2">{user.name}</td>
-                  <td className="border px-4 py-2">{user.email}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full border border-gray-200 rounded-lg">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="border border-gray-200 px-4 py-3 text-left">Name</th>
+                  <th className="border border-gray-200 px-4 py-3 text-left">Email</th>
+                  <th className="border border-gray-200 px-4 py-3 text-left">Designation</th>
+                  <th className="border border-gray-200 px-4 py-3 text-left">Created</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {users.map((user, i) => (
+                  <tr key={user.id || i} className="hover:bg-gray-50">
+                    <td className="border border-gray-200 px-4 py-3">{user.name}</td>
+                    <td className="border border-gray-200 px-4 py-3">{user.email}</td>
+                    <td className="border border-gray-200 px-4 py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        user.designation === 'Super Admin' ? 'bg-red-100 text-red-800' :
+                        user.designation === 'Admin' ? 'bg-blue-100 text-blue-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {user.designation}
+                      </span>
+                    </td>
+                    <td className="border border-gray-200 px-4 py-3">{user.createdAt}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div> 
