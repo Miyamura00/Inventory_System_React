@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import axios from 'axios'
 import CreateAccount from '../components/buttons/CreateAccount'
+import { useEffect } from 'react'
 
 const AddUser = () => {
 const [formData, setFormData] = useState({
@@ -14,7 +15,21 @@ const [users, setUsers] = useState([])
 const [open, setOpen] = useState(false)
 const [loading, setLoading] = useState(false) 
 
-const designations = ['Super Admin', 'Admin', 'Staff']
+const designations = ['Select','Super Admin', 'Admin', 'Staff']
+
+useEffect(() => {
+  const fetchUsers = async () => {
+    try{
+      const response = await axios.get('http://localhost:5000/api/users')
+      if(response.data.success){
+        setUsers(response.data.users)
+      }
+    } catch(error){
+      console.error("Error fetching users:", error);
+    }
+  }
+  fetchUsers()  
+}, [])
 
 const handleChange = (e) => {
   const {name, value} = e.target;
@@ -46,13 +61,7 @@ const handleSubmit = async (e) => {
     })
 
       if (response.data.success) {
-        setUsers((prev) => [...prev, {
-          id: response.data.user.id,
-          name: formData.name,
-          email: formData.email,
-          designation: formData.designation,
-          createdAt: new Date().toLocaleDateString()
-        }])
+        setUsers((prev) => [...prev, response.data.user])
         alert("Account Created Successfully")
         setFormData({
           name: "",
