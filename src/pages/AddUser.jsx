@@ -13,6 +13,7 @@ const [formData, setFormData] = useState({
 
 const [users, setUsers] = useState([])
 const [open, setOpen] = useState(false)
+const [emailError, setEmailError] = useState("")
 const [loading, setLoading] = useState(false) 
 
 const designations = ['Select','Super Admin', 'Admin', 'Staff']
@@ -34,11 +35,27 @@ useEffect(() => {
 const handleChange = (e) => {
   const {name, value} = e.target;
   setFormData((prev) => ({...prev, [name]:value}))
+
+  if(name === "email"){
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if(!emailRegex.test(value)){
+      setEmailError("Please enter a valid email address")
+    } else {
+      setEmailError("")
+    }
+  }
 }
 
 const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true)
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if(!emailRegex.test(formData.email)){
+    alert("Please enter a valid email address!")
+    setLoading(false)
+    return
+  }
 
   if (formData.password !== formData.confirmpassword){
     alert("Password do not match!")
@@ -108,16 +125,17 @@ const handleSubmit = async (e) => {
         />
       
         <input 
-        type="text"
+        type="email"
         name="email"
         placeholder="Email Address"
         value={formData.email}
         onChange={handleChange}
         required
-        className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className= {`border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400
+          ${emailError ? "border-red-500 focus:ring-red-400 " : "border-gray-300 focus:ring-blue-400"}`}
         disabled={loading}
         />
-
+        {emailError && ( <p className="text-red-500 text-sm">{emailError}</p>)}
          <select
                 name="designation"
                 value={formData.designation}
