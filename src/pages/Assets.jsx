@@ -1,9 +1,14 @@
 import React, { useState } from 'react'
-import { useAssetContext } from '../hooks/useAssetContext'
+import axios from "axios";
 import ButtonAsset from '../components/buttons/ButtonAsset'
+import { useEffect } from 'react';
+
+
+
+
 const Assets = () => {
 
-    const {assets, setAssets} = useAssetContext()
+    const [assets, setAssets] = useState([])
     const [formData, setFormData] = useState({
       modelName:"",
       brandName:"",
@@ -16,42 +21,81 @@ const Assets = () => {
       tag:""
 
     })
-    const [open, setOpen] =useState()
+    const [open, setOpen] =useState(false)
+    const [loading, setLoading] = useState(false)
+    const [errors, setErrors] = useState({serialNumber:"", tag:""})
+
+
+    useEffect(() => {
+      const fetchAssets = async () => {
+        try{
+          const response = await axios.get("http://localhost:5000/api/assets")  
+          if(response.data.success){
+            setAssets(response.data.assets)
+          }
+        } catch (error){
+          console.error("Error fetching assets:", error);
+        }
+      }
+      fetchAssets()
+    }, [])
+
+  
 
     const handleChange = (e) => {
       const {name, value} = e.target;
       setFormData((prev) => ({...prev,[name]:value}))
+
+      if(name === "serialNumber"){
+        if(assets.some((asset) => asset.serialNumber === value)){
+          setErrors((prev) => ({...prev, serialNumber:"Serial Number must be unique!"}))
+        } else {
+          setErrors((prev) => ({...prev, serialNumber:""}))
+        }
     }
-    
+      if(name === "tag"){
+        if(assets.some((asset) => asset.tag === value)){
+          setErrors((prev) => ({...prev, tag:"Tag must be unique!"}))
+        } else {
+          setErrors((prev) => ({...prev, tag:""}))
+        }
+    }
+  }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
+      setLoading(true)
 
-      if (assets.some((asset) => asset.serialNumber === formData.serialNumber)){
-        alert("Serial Number must be unique!")
-        return
+      try{
+        const response = await axios.post("http://localhost:5000/api/assets", formData)
+
+        if(response.data.success){
+          setAssets((prev) => [ ...prev, {id: response.data.id, ...formData, status:"In Stock"}
+          ])
+          alert("Asset added successfully!")
+
+          setFormData({
+            modelName:"",
+            brandName:"",
+            purchaseDate:"",
+            category:"",
+            description:"",
+            serialNumber:"",
+            tag:"",
+          })
+          setOpen(false)
+        }
+      } catch (error){
+        console.error("Error adding asset:", error)
+        if(error.response?.data?.message){
+          alert(error.response.data.message)
+        } else {
+          alert("Failed to add asset. Try again.")
+        }
+      } finally{
+        setLoading(false)
       }
-      if (assets.some((asset) => asset.tag === formData.tag)){
-        alert("Tag must be unique")
-        return
-      }
 
-      setAssets((prev) => [...prev, formData])
-      alert("Asset added successfully")
-
-      setFormData({
-      modelName:"",
-      brandName:"",
-      purchaseDate:"",
-      status:"In Stock",
-      assignedTo:"",
-      category:"",
-      description:"",
-      serialNumber:"",
-      tag:""
-      })
-
-      setOpen(false)
     }
     
   return (
@@ -65,6 +109,7 @@ const Assets = () => {
         >
         <h2 className='text-2xl font-bold mb-4 text-center'>Add Asset</h2>
         <form onSubmit={handleSubmit} className='grid grid-cols-2 gap-4'>
+
         <input 
           type="text"
           name="modelName"
@@ -73,6 +118,7 @@ const Assets = () => {
           onChange={handleChange}
           required
           className="border rounded-lg p-2 col-span-2"
+          disabled={loading}
         />
         <input 
           type="text"
@@ -82,6 +128,7 @@ const Assets = () => {
           onChange={handleChange}
           required
           className="border rounded-lg p-2"
+          disabled={loading}
         />
         <input 
           type='date'
@@ -90,25 +137,8 @@ const Assets = () => {
           onChange={handleChange}
           required
           className="border rounded-lg p-2"
+          disabled={loading}
         />
-        <select 
-          name="status"
-          value={formData.status}
-          onChange={handleChange}
-          className='border rounded-lg p-2 col-span-2'  
-        >
-          <option value="In Stock">In Stock</option>
-          <option value="Out of Stock">Out of Stock</option>
-          <option value="Maintenance">Maintenance</option>
-        </select>
-        <input
-              type="text"
-              name="assignedTo"
-              placeholder="Assigned To (Employee Name)"
-              value={formData.assignedTo}
-              onChange={handleChange}
-              className="border rounded-lg p-2 col-span-2"
-            />
 
           <input
             type="text"
@@ -118,6 +148,7 @@ const Assets = () => {
             onChange={handleChange}
             required
             className="border rounded-lg p-2 col-span-2"
+            disabled={loading}
           />
 
           <input
@@ -127,8 +158,11 @@ const Assets = () => {
             value={formData.serialNumber}
             onChange={handleChange}
             required
-            className="border rounded-lg p-2"
+            className={`border rounded-lg p-2 ${errors.serialNumber ? "border-red-500" : ""}`}
+            disabled={loading}
           />
+          {errors.serialNumber && (<p className="text-red-500 text-sm col-span-2">{errors.serialNumber}</p>
+          )}
 
           <input
             type="text"
@@ -137,8 +171,11 @@ const Assets = () => {
             value={formData.tag}
             onChange={handleChange}
             required
-            className="border rounded-lg p-2"
+            className={`border rounded-lg p-2 ${errors.tag ? "border-red-500" : ""}`}
+            disabled={loading}
           />
+          {errors.tag && (<p className="text-red-500 text-sm col-span-2">{errors.tag}</p>
+          )}
 
           <textarea
             name="description"
@@ -146,6 +183,7 @@ const Assets = () => {
             value={formData.description}
             onChange={handleChange}
             className="border rounded-lg p-2 col-span-2"
+            disabled={loading}
           />
 
           <div className='flex justify-center gap-4 col-span-2 mt-4'>
@@ -153,14 +191,16 @@ const Assets = () => {
             type="button"
             onClick={() => setOpen(false)}
             className='px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors'
+            disabled={loading}
         >
         Cancel
         </button>
             <button
             type="submit"
             className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            disabled={loading || errors.serialNumber || errors.tag}
           >
-            Add Asset
+           {loading ? "Adding..." : "Add Asset"}
           </button>
           </div>
         </form>
