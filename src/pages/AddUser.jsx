@@ -16,7 +16,8 @@ const [open, setOpen] = useState(false)
 const [emailError, setEmailError] = useState("")
 const [loading, setLoading] = useState(false) 
 
-const designations = ['Select','Super Admin', 'Admin', 'Staff']
+const designations = ['Select Role','Super Admin', 'Admin', 'Staff']
+const departments = ['Select Department','HR', 'IT', 'Finance', 'Sales']
 
 useEffect(() => {
   const fetchUsers = async () => {
@@ -74,7 +75,8 @@ const handleSubmit = async (e) => {
       name: formData.name,
       email: formData.email,
       password: formData.password,
-      designation: formData.designation
+      designation: formData.designation,
+      department: formData.department
     })
 
       if (response.data.success) {
@@ -85,7 +87,8 @@ const handleSubmit = async (e) => {
           email: "",
           password: "",
           confirmpassword: "",
-          designation: "Staff"
+          designation: "Staff",
+          department: "IT"
         })
         setOpen(false)
       }
@@ -150,8 +153,21 @@ const handleSubmit = async (e) => {
                   </option>
                 ))}
               </select>
-
-
+        
+          <select
+          name="department"
+          value={formData.department}
+          onChange={handleChange}
+          required
+          className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+          disabled={loading}
+        >
+          {departments.map((department) => (
+            <option key={department} value={department}>
+              {department}
+            </option>
+          ))}
+        </select>
         <input 
         type="password"
         name="password"
