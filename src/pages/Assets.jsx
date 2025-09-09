@@ -1,14 +1,45 @@
 import React, { useState } from 'react'
-import axios from "axios";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { fetchAssets, addAsset } from '../services/assets'
 import ButtonAsset from '../components/buttons/ButtonAsset'
-import { useEffect } from 'react';
+
 
 
 
 
 const Assets = () => {
 
-    const [assets, setAssets] = useState([])
+    const queryClient = useQueryClient()
+
+      const { data: assets = [] , isLoading, isError} = useQuery({
+      queryKey: ['assets'],
+      queryFn: fetchAssets,
+      initialData: []
+    })
+
+    const mutation = useMutation({
+      mutationFn: addAsset,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['assets'] })
+         alert("Asset added successfully!")
+        setFormData({
+          modelName:"",
+          brandName:"",
+          purchaseDate:"",
+          status:"In Stock",
+          assignedTo:"",
+          category:"",
+          description:"",
+          serialNumber:"",
+          tag:""
+        })
+         setOpen(false)
+      },
+      onError: (error) => {
+        alert(error.response?.data?.message || "Failed to add asset. Try again.")
+      }
+    })
+
     const [formData, setFormData] = useState({
       modelName:"",
       brandName:"",
@@ -22,79 +53,38 @@ const Assets = () => {
 
     })
     const [open, setOpen] =useState(false)
-    const [loading, setLoading] = useState(false)
-    const [errors, setErrors] = useState({serialNumber:"", tag:""})
-
-
-    useEffect(() => {
-      const fetchAssets = async () => {
-        try{
-          const response = await axios.get("http://localhost:5000/api/assets")  
-          if(response.data.success){
-            setAssets(response.data.assets)
-          }
-        } catch (error){
-          console.error("Error fetching assets:", error);
-        }
-      }
-      fetchAssets()
-    }, [])
-
+    const [errors, setErrors] = useState({
+      serialNumber: "",
+      tag: ""
+    })
   
+   
 
     const handleChange = (e) => {
       const {name, value} = e.target;
       setFormData((prev) => ({...prev,[name]:value}))
 
-      if(name === "serialNumber"){
-        if(assets.some((asset) => asset.serialNumber === value)){
-          setErrors((prev) => ({...prev, serialNumber:"Serial Number must be unique!"}))
+      if (name === "serialNumber") {
+        if (assets.some((asset) => asset.serialNumber === value)) {
+          setErrors((prev) => ({...prev, serialNumber: "Serial Number must be unique"}))
         } else {
-          setErrors((prev) => ({...prev, serialNumber:""}))
+          setErrors((prev) => ({...prev, serialNumber: ""}))
         }
-    }
-      if(name === "tag"){
-        if(assets.some((asset) => asset.tag === value)){
-          setErrors((prev) => ({...prev, tag:"Tag must be unique!"}))
+      }
+
+      if (name === "tag") {
+        if (assets.some((asset) => asset.tag === value)) {
+          setErrors((prev) => ({...prev, tag: "Tag ID must be unique"}))  
         } else {
-          setErrors((prev) => ({...prev, tag:""}))
+          setErrors((prev) => ({...prev, tag: ""}))
         }
+      }
     }
-  }
+
 
     const handleSubmit = async (e) => {
       e.preventDefault();
-      setLoading(true)
-
-      try{
-        const response = await axios.post("http://localhost:5000/api/assets", formData)
-
-        if(response.data.success){
-          setAssets((prev) => [ ...prev, {id: response.data.id, ...formData, status:"In Stock"}
-          ])
-          alert("Asset added successfully!")
-
-          setFormData({
-            modelName:"",
-            brandName:"",
-            purchaseDate:"",
-            category:"",
-            description:"",
-            serialNumber:"",
-            tag:"",
-          })
-          setOpen(false)
-        }
-      } catch (error){
-        console.error("Error adding asset:", error)
-        if(error.response?.data?.message){
-          alert(error.response.data.message)
-        } else {
-          alert("Failed to add asset. Try again.")
-        }
-      } finally{
-        setLoading(false)
-      }
+      mutation.mutate(formData)
 
     }
     
@@ -118,7 +108,6 @@ const Assets = () => {
           onChange={handleChange}
           required
           className="border rounded-lg p-2 col-span-2"
-          disabled={loading}
         />
         <input 
           type="text"
@@ -128,7 +117,6 @@ const Assets = () => {
           onChange={handleChange}
           required
           className="border rounded-lg p-2"
-          disabled={loading}
         />
         <input 
           type='date'
@@ -137,7 +125,7 @@ const Assets = () => {
           onChange={handleChange}
           required
           className="border rounded-lg p-2"
-          disabled={loading}
+
         />
 
           <input
@@ -147,8 +135,7 @@ const Assets = () => {
             value={formData.category}
             onChange={handleChange}
             required
-            className="border rounded-lg p-2 col-span-2"
-            disabled={loading}
+            className="border rounded-lg p-2 col-span-2"  
           />
 
           <input
@@ -159,7 +146,6 @@ const Assets = () => {
             onChange={handleChange}
             required
             className={`border rounded-lg p-2 ${errors.serialNumber ? "border-red-500" : ""}`}
-            disabled={loading}
           />
           {errors.serialNumber && (<p className="text-red-500 text-sm col-span-2">{errors.serialNumber}</p>
           )}
@@ -172,7 +158,6 @@ const Assets = () => {
             onChange={handleChange}
             required
             className={`border rounded-lg p-2 ${errors.tag ? "border-red-500" : ""}`}
-            disabled={loading}
           />
           {errors.tag && (<p className="text-red-500 text-sm col-span-2">{errors.tag}</p>
           )}
@@ -183,7 +168,6 @@ const Assets = () => {
             value={formData.description}
             onChange={handleChange}
             className="border rounded-lg p-2 col-span-2"
-            disabled={loading}
           />
 
           <div className='flex justify-center gap-4 col-span-2 mt-4'>
@@ -191,16 +175,16 @@ const Assets = () => {
             type="button"
             onClick={() => setOpen(false)}
             className='px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors'
-            disabled={loading}
+
         >
         Cancel
         </button>
             <button
             type="submit"
             className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            disabled={loading || errors.serialNumber || errors.tag}
+            disabled={mutation.isLoading || errors.serialNumber || errors.tag}
           >
-           {loading ? "Adding..." : "Add Asset"}
+           {mutation.isLoading ? "Adding..." : "Add Asset"}
           </button>
           </div>
         </form>
