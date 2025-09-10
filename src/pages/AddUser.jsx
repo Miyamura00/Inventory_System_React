@@ -245,6 +245,7 @@ const AddUser = () => {
                   <th className="border border-gray-200 px-4 py-3 text-left">Name</th>
                   <th className="border border-gray-200 px-4 py-3 text-left">Email</th>
                   <th className="border border-gray-200 px-4 py-3 text-left">Designation</th>
+                  <th className="border border-gray-200 px-4 py-3 text-left">Department</th>
                   <th className="border border-gray-200 px-4 py-3 text-left">Created</th>
                 </tr>
               </thead>
@@ -266,6 +267,21 @@ const AddUser = () => {
                         {user.designation}
                       </span>
                     </td>
+                     <td className="border border-gray-200 px-4 py-3">
+                      <span
+                       className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          user.department === "HR"
+                            ? "bg-beige-100 text-beige-800"
+                            : user.department === "IT"
+                            ? "bg-black-100 text-black-800"
+                            : user.department === "Finance"
+                            ? "bg-orange-100 text-orange-800"
+                            : "bg-brown-100 text-brown-800"
+                        }`}
+                        >
+                          {user.department}
+                      </span>
+                     </td>
                     <td className="border border-gray-200 px-4 py-3">{user.createdAt}</td>
                   </tr>
                 ))}
