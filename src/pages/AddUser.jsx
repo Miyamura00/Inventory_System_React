@@ -18,15 +18,17 @@ const AddUser = () => {
   const [passwordError, setPasswordError] = useState("");
   const [confirmError, setConfirmError] = useState("");
 
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
+
   const queryClient = useQueryClient();
 
-  // Fetch users with React Query
+  // Fetch users
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["users"],
     queryFn: fetchUsers,
   });
 
-  // Mutation for adding user
+  // Add user
   const mutation = useMutation({
     mutationFn: addUser,
     onSuccess: (newUser) => {
@@ -55,16 +57,24 @@ const AddUser = () => {
   const designations = ["Select Role", "Super Admin", "Admin", "Staff"];
   const departments = ["Select Department", "HR", "IT", "Finance", "Sales"];
 
+  // Group users by department
+  const groupedUsers = users.reduce((acc, user) => {
+    if (!acc[user.department]) acc[user.department] = [];
+    acc[user.department].push(user);
+    return acc;
+  }, {});
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (name === "email") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
       if (!emailRegex.test(value)) {
         setEmailError("Please enter a valid email address");
-      } else if (users.some((u) => u.email.toLowerCase() === value.toLowerCase())) {
+      } else if (
+        users.some((u) => u.email.toLowerCase() === value.toLowerCase())
+      ) {
         setEmailError("This email is already registered");
       } else {
         setEmailError("");
@@ -77,7 +87,6 @@ const AddUser = () => {
       } else {
         setPasswordError("");
       }
-
       if (formData.confirmpassword && value !== formData.confirmpassword) {
         setConfirmError("Passwords do not match");
       } else {
@@ -96,12 +105,10 @@ const AddUser = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (emailError || passwordError || confirmError) {
       alert("Please fix validation errors before submitting.");
       return;
     }
-
     mutation.mutate({
       name: formData.name,
       email: formData.email,
@@ -111,9 +118,28 @@ const AddUser = () => {
     });
   };
 
+  // Helper for department badge colors
+  const getDepartmentBadge = (department) => {
+    switch (department) {
+      case "HR":
+        return "bg-yellow-100 text-yellow-800";
+      case "IT":
+        return "bg-gray-800 text-white";
+      case "Finance":
+        return "bg-orange-100 text-orange-800";
+      case "Sales":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   return (
     <div className="p-6">
+      {/* Button to open Create Account modal */}
       <CreateAccount onClick={() => setOpen(true)} />
+
+      {/* Modal */}
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
@@ -143,7 +169,7 @@ const AddUser = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className={`border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400
+                className={`border rounded-lg p-2 focus:outline-none focus:ring-2
                 ${
                   emailError
                     ? "border-red-500 focus:ring-red-400"
@@ -191,10 +217,16 @@ const AddUser = () => {
                 onChange={handleChange}
                 required
                 className={`border rounded-lg p-2 focus:outline-none focus:ring-2
-                ${passwordError ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-blue-400"}`}
+                ${
+                  passwordError
+                    ? "border-red-500 focus:ring-red-400"
+                    : "border-gray-300 focus:ring-blue-400"
+                }`}
                 disabled={mutation.isLoading}
               />
-              {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
+              {passwordError && (
+                <p className="text-red-500 text-sm">{passwordError}</p>
+              )}
 
               <input
                 type="password"
@@ -204,10 +236,16 @@ const AddUser = () => {
                 onChange={handleChange}
                 required
                 className={`border rounded-lg p-2 focus:outline-none focus:ring-2
-                ${confirmError ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-blue-400"}`}
+                ${
+                  confirmError
+                    ? "border-red-500 focus:ring-red-400"
+                    : "border-gray-300 focus:ring-blue-400"
+                }`}
                 disabled={mutation.isLoading}
               />
-              {confirmError && <p className="text-red-500 text-sm">{confirmError}</p>}
+              {confirmError && (
+                <p className="text-red-500 text-sm">{confirmError}</p>
+              )}
 
               <div className="flex justify-end space-x-2">
                 <button
@@ -221,7 +259,9 @@ const AddUser = () => {
                 <button
                   type="submit"
                   className="rounded-lg bg-sky-500 px-4 py-2 text-white hover:bg-sky-600"
-                  disabled={mutation.isLoading || emailError || passwordError || confirmError}
+                  disabled={
+                    mutation.isLoading || emailError || passwordError || confirmError
+                  }
                 >
                   {mutation.isLoading ? "Creating..." : "Register"}
                 </button>
@@ -231,6 +271,7 @@ const AddUser = () => {
         </div>
       )}
 
+      {/* Department Cards and User Table */}
       <div className="mt-10 bg-white shadow-lg rounded-xl p-6 bg-cyan-500/10">
         <h3 className="text-xl font-semibold mb-4">User Accounts</h3>
         {isLoading ? (
@@ -238,56 +279,80 @@ const AddUser = () => {
         ) : users.length === 0 ? (
           <p className="text-gray-500">No accounts added yet.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border border-gray-200 rounded-lg">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="border border-gray-200 px-4 py-3 text-left">Name</th>
-                  <th className="border border-gray-200 px-4 py-3 text-left">Email</th>
-                  <th className="border border-gray-200 px-4 py-3 text-left">Designation</th>
-                  <th className="border border-gray-200 px-4 py-3 text-left">Department</th>
-                  <th className="border border-gray-200 px-4 py-3 text-left">Created</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user, i) => (
-                  <tr key={user.id || i} className="hover:bg-gray-50">
-                    <td className="border border-gray-200 px-4 py-3">{user.name}</td>
-                    <td className="border border-gray-200 px-4 py-3">{user.email}</td>
-                    <td className="border border-gray-200 px-4 py-3">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          user.designation === "Super Admin"
-                            ? "bg-red-100 text-red-800"
-                            : user.designation === "Admin"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-green-100 text-green-800"
-                        }`}
-                      >
-                        {user.designation}
-                      </span>
-                    </td>
-                     <td className="border border-gray-200 px-4 py-3">
-                      <span
-                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          user.department === "HR"
-                            ? "bg-beige-100 text-beige-800"
-                            : user.department === "IT"
-                            ? "bg-black-100 text-black-800"
-                            : user.department === "Finance"
-                            ? "bg-orange-100 text-orange-800"
-                            : "bg-brown-100 text-brown-800"
-                        }`}
-                        >
-                          {user.department}
-                      </span>
-                     </td>
-                    <td className="border border-gray-200 px-4 py-3">{user.createdAt}</td>
-                  </tr>
+          <>
+            {selectedDepartment === null ? (
+              // Department cards
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {Object.keys(groupedUsers).map((dept) => (
+                  <div
+                    key={dept}
+                    onClick={() => setSelectedDepartment(dept)}
+                    className="cursor-pointer bg-white shadow-md rounded-xl p-6 text-center hover:shadow-lg transition"
+                  >
+                    <h4 className="font-semibold text-lg">{dept}</h4>
+                    <p className="text-gray-500">
+                      {groupedUsers[dept].length} users
+                    </p>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            ) : (
+              // Users inside selected department
+              <div>
+                <button
+                  onClick={() => setSelectedDepartment(null)}
+                  className="mb-4 px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+                >
+                  ← Back
+                </button>
+                <h3 className="text-xl font-bold mb-4">
+                  {selectedDepartment} Department
+                </h3>
+                <table className="w-full border border-gray-200 rounded-lg">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-4 py-2 border">Name</th>
+                      <th className="px-4 py-2 border">Email</th>
+                      <th className="px-4 py-2 border">Designation</th>
+                      <th className="px-4 py-2 border">Department</th>
+                      <th className="px-4 py-2 border">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {groupedUsers[selectedDepartment].map((user, i) => (
+                      <tr key={user.id || i} className="hover:bg-gray-50">
+                        <td className="px-4 py-2 border">{user.name}</td>
+                        <td className="px-4 py-2 border">{user.email}</td>
+                        <td className="px-4 py-2 border">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.designation === "Super Admin"
+                                ? "bg-red-100 text-red-800"
+                                : user.designation === "Admin"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-green-100 text-green-800"
+                            }`}
+                          >
+                            {user.designation}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 border">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getDepartmentBadge(
+                              user.department
+                            )}`}
+                          >
+                            {user.department}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 border">{user.createdAt}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
