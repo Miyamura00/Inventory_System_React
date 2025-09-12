@@ -206,22 +206,22 @@ const Assets = () => {
       )}
 
       {/* Assets List */}
-      <div className="bg-white shadow-md rounded-xl p-6">
+      <div className="mt-10 bg-white shadow-lg rounded-xl p-6 bg-cyan-500/10">
         <h3 className="text-xl font-semibold mb-4">Assets List</h3>
 
         {assets.length === 0 ? (
           <p className="text-gray-500">No assets added yet.</p>
         ) : !selectedCategory ? (
           // Show categories as CARDS
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Object.keys(groupedAssets).map((category) => (
               <div
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className="p-6 border rounded-lg shadow hover:shadow-lg cursor-pointer transition"
+                className="cursor-pointer bg-white shadow-md rounded-xl p-6 text-center hover:shadow-lg transition"
               >
-                <h4 className="text-lg font-bold">{category}</h4>
-                <p className="text-gray-600">
+                <h4 className="font-semibold text-lg">{category}</h4>
+                <p className="text-gray-500">
                   {groupedAssets[category].length} items
                 </p>
               </div>

@@ -282,12 +282,14 @@ const AddUser = () => {
           <>
             {selectedDepartment === null ? (
               // Department cards
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
                 {Object.keys(groupedUsers).map((dept) => (
                   <div
                     key={dept}
                     onClick={() => setSelectedDepartment(dept)}
-                    className="cursor-pointer bg-white shadow-md rounded-xl p-6 text-center hover:shadow-lg transition"
+                    className="cursor-pointer bg-white rounded-xl p-6 text-center
+             shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 
+             border border-gray-100"
                   >
                     <h4 className="font-semibold text-lg">{dept}</h4>
                     <p className="text-gray-500">
