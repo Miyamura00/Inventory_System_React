@@ -134,6 +134,13 @@ const AddUser = () => {
     }
   };
 
+  const departmentGradients = {
+  HR: "from-pink-200 via-pink-300 to-rose-200",
+  IT: "from-blue-200 via-indigo-300 to-cyan-200",
+  Finance: "from-yellow-200 via-orange-300 to-amber-200",
+  Sales: "from-green-200 via-emerald-300 to-teal-200",
+};
+
   return (
     <div className="p-6">
       {/* Button to open Create Account modal */}
@@ -285,17 +292,20 @@ const AddUser = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
                 {Object.keys(groupedUsers).map((dept) => (
                   <div
-                    key={dept}
-                    onClick={() => setSelectedDepartment(dept)}
-                    className="cursor-pointer bg-white rounded-xl p-6 text-center
-             shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 
-             border border-gray-100"
-                  >
-                    <h4 className="font-semibold text-lg">{dept}</h4>
-                    <p className="text-gray-500">
-                      {groupedUsers[dept].length} users
-                    </p>
-                  </div>
+  key={dept}
+  className={`p-[2px] rounded-xl bg-gradient-to-r ${
+    departmentGradients[dept] || "from-gray-200 to-gray-300"
+  }`}
+>
+  <div
+    onClick={() => setSelectedDepartment(dept)}
+    className="cursor-pointer bg-white rounded-xl p-6 text-center
+               shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1"
+  >
+    <h4 className="font-semibold text-lg">{dept}</h4>
+    <p className="text-gray-500">{groupedUsers[dept].length} users</p>
+  </div>
+</div>
                 ))}
               </div>
             ) : (
