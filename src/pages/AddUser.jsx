@@ -292,20 +292,25 @@ const AddUser = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
                 {Object.keys(groupedUsers).map((dept) => (
                   <div
-  key={dept}
-  className={`p-[2px] rounded-xl bg-gradient-to-r ${
-    departmentGradients[dept] || "from-gray-200 to-gray-300"
+                  key={dept}
+                  className={`p-[2px] rounded-xl bg-gradient-to-r ${
+                  departmentGradients[dept] || "from-gray-200 to-gray-300"
   }`}
 >
-  <div
-    onClick={() => setSelectedDepartment(dept)}
-    className="cursor-pointer bg-white rounded-xl p-6 text-center
-               shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1"
-  >
-    <h4 className="font-semibold text-lg">{dept}</h4>
-    <p className="text-gray-500">{groupedUsers[dept].length} users</p>
-  </div>
-</div>
+                <div
+                onClick={() => setSelectedDepartment(dept)}
+                className={`cursor-pointer rounded-xl p-6 text-center text-white
+                shadow-lg transition transform hover:-translate-y-1 
+                border border-gray-100 hover:shadow-[0_0_40px_rgba(0,0,0,0.3)]
+                ${dept === "HR" ? "bg-gradient-to-br from-yellow-400 to-yellow-600 ring-4 ring-yellow-300/70" : ""}
+                ${dept === "IT" ? "bg-gradient-to-br from-blue-500 to-blue-700 ring-4 ring-blue-400/70" : ""}
+                ${dept === "Finance" ? "bg-gradient-to-br from-orange-400 to-orange-600 ring-4 ring-orange-300/70" : ""}
+                ${dept === "Sales" ? "bg-gradient-to-br from-purple-500 to-purple-700 ring-4 ring-purple-400/70" : ""}`}
+                >
+                <h4 className="font-semibold text-lg">{dept}</h4>
+                <p className="text-gray-500">{groupedUsers[dept].length} users</p>
+                </div>
+                </div>
                 ))}
               </div>
             ) : (
