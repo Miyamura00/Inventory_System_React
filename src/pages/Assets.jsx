@@ -220,9 +220,9 @@ const Assets = () => {
                 onClick={() => setSelectedCategory(category)}
                 className={`cursor-pointer rounded-xl p-6 text-center text-white
                 shadow-lg transition transform hover:-translate-y-1 
-                border border-gray-100 hover:shadow-[0_0_40px_rgba(0,0,0,0.3)]
-                ${category === "Laptop" ? "bg-gradient-to-br from-yellow-400 to-yellow-600 ring-4 ring-yellow-300/70" : ""}
-                ${category === "Monitor" ? "bg-gradient-to-br from-blue-500 to-blue-700 ring-4 ring-blue-400/70" : ""}`}
+                border border-gray-100
+                ${category === "Laptop" ? "bg-gradient-to-br from-yellow-400 to-yellow-600 animate-glow-yellow" : ""}
+                ${category === "Monitor" ? "bg-gradient-to-br from-blue-500 to-blue-700 animate-glow-blue" : ""}`}
               >
                 <h4 className="font-semibold text-lg">{category}</h4>
                 <p className="text-gray-500">
