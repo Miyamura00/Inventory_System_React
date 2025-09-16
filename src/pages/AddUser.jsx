@@ -296,7 +296,7 @@ const AddUser = () => {
                   className={`p-[2px] rounded-xl bg-gradient-to-r ${
                   departmentGradients[dept] || "from-gray-200 to-gray-300"
                    }`}
-                >
+                  >
                 <div
                 onClick={() => setSelectedDepartment(dept)}
                 className={`cursor-pointer rounded-xl p-6 text-center text-white
