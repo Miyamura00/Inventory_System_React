@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import CreateAccount from "../components/buttons/CreateAccount";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchUsers, addUser } from "../services/users";
+import { fetchUsers, addUser, updateUser, deleteUser } from "../services/users";
 
 const AddUser = () => {
   const [formData, setFormData] = useState({
@@ -54,6 +54,26 @@ const AddUser = () => {
     },
   });
 
+  const updateMutation = useMutation ({
+      mutationFn: updateUser,
+      onSuccess: () => {
+        queryClient.invalidateQueries(["users"])
+      }
+  })
+  
+  const deleteMutation = useMutation({
+      mutationFn: deleteUser,
+      onSuccess: () => {
+        queryClient.invalidateQueries(["users"])
+      }
+  })
+
+  const disableMutation = useMutation({
+      mutationFn: updateUser,
+      onSuccess: () => {
+        queryClient.invalidateQueries(["users"])
+      }
+  })
   const designations = ["Select Role", "Super Admin", "Admin", "Staff"];
   const departments = ["Select Department", "HR", "IT", "Finance", "Sales"];
 
@@ -117,6 +137,8 @@ const AddUser = () => {
       department: formData.department,
     });
   };
+
+
 
   // Helper for department badge colors
   const getDepartmentBadge = (department) => {
@@ -333,6 +355,7 @@ const AddUser = () => {
                       <th className="px-4 py-2 border">Designation</th>
                       <th className="px-4 py-2 border">Department</th>
                       <th className="px-4 py-2 border">Created</th>
+                      <th className="px-4 py-2 border">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -363,6 +386,26 @@ const AddUser = () => {
                           </span>
                         </td>
                         <td className="px-4 py-2 border">{user.createdAt}</td>
+                        <td className="px-4 py-2 border space-x-2 text-center">
+                          <button   
+                            onClick={() => updateMutation.mutate({id: user._id, updates:{name:"Edited Name"}})}
+                             className="text-blue-500 hover:text-blue-700"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => disableMutation.mutate(user._id)}
+                            className="text-yellow-500 hover:text-yellow-700"
+                          >
+                            🚫
+                          </button>
+                          <button
+                          onClick={() => deleteMutation.mutate(user._id)}
+                          className="text-red-500 hover:text-red-700"
+                          >
+                            🗑️
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
