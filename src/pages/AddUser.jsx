@@ -14,6 +14,7 @@ const AddUser = () => {
   });
 
   const [open, setOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null); // 👈 for edit modal
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmError, setConfirmError] = useState("");
@@ -44,36 +45,30 @@ const AddUser = () => {
       });
       setOpen(false);
     },
-    onError: (error) => {
-      console.error("Registration Error:", error);
-      if (error.response?.data?.message) {
-        alert(error.response.data.message);
-      } else {
-        alert("Failed to create account. Please try again.");
-      }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["users"]);
+      setEditingUser(null); // close edit modal
     },
   });
 
-  const updateMutation = useMutation ({
-      mutationFn: updateUser,
-      onSuccess: () => {
-        queryClient.invalidateQueries(["users"])
-      }
-  })
-  
   const deleteMutation = useMutation({
-      mutationFn: deleteUser,
-      onSuccess: () => {
-        queryClient.invalidateQueries(["users"])
-      }
-  })
+    mutationFn: deleteUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["users"]);
+    },
+  });
 
   const disableMutation = useMutation({
-      mutationFn: updateUser,
-      onSuccess: () => {
-        queryClient.invalidateQueries(["users"])
-      }
-  })
+    mutationFn: updateUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["users"]);
+    },
+  });
+
   const designations = ["Select Role", "Super Admin", "Admin", "Staff"];
   const departments = ["Select Department", "HR", "IT", "Finance", "Sales"];
 
@@ -87,40 +82,6 @@ const AddUser = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (name === "email") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value)) {
-        setEmailError("Please enter a valid email address");
-      } else if (
-        users.some((u) => u.email.toLowerCase() === value.toLowerCase())
-      ) {
-        setEmailError("This email is already registered");
-      } else {
-        setEmailError("");
-      }
-    }
-
-    if (name === "password") {
-      if (value.length < 6) {
-        setPasswordError("Password must be at least 6 characters long");
-      } else {
-        setPasswordError("");
-      }
-      if (formData.confirmpassword && value !== formData.confirmpassword) {
-        setConfirmError("Passwords do not match");
-      } else {
-        setConfirmError("");
-      }
-    }
-
-    if (name === "confirmpassword") {
-      if (value !== formData.password) {
-        setConfirmError("Passwords do not match");
-      } else {
-        setConfirmError("");
-      }
-    }
   };
 
   const handleSubmit = (e) => {
@@ -137,8 +98,6 @@ const AddUser = () => {
       department: formData.department,
     });
   };
-
-
 
   // Helper for department badge colors
   const getDepartmentBadge = (department) => {
@@ -157,18 +116,18 @@ const AddUser = () => {
   };
 
   const departmentGradients = {
-  HR: "from-pink-200 via-pink-300 to-rose-200",
-  IT: "from-blue-200 via-indigo-300 to-cyan-200",
-  Finance: "from-yellow-200 via-orange-300 to-amber-200",
-  Sales: "from-green-200 via-emerald-300 to-teal-200",
-};
+    HR: "from-pink-200 via-pink-300 to-rose-200",
+    IT: "from-blue-200 via-indigo-300 to-cyan-200",
+    Finance: "from-yellow-200 via-orange-300 to-amber-200",
+    Sales: "from-green-200 via-emerald-300 to-teal-200",
+  };
 
   return (
     <div className="p-6">
       {/* Button to open Create Account modal */}
       <CreateAccount onClick={() => setOpen(true)} />
 
-      {/* Modal */}
+      {/* Create Account Modal */}
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
@@ -180,6 +139,7 @@ const AddUser = () => {
           >
             <h2 className="font-bold">Create Account</h2>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {/* name */}
               <input
                 type="text"
                 name="name"
@@ -187,10 +147,9 @@ const AddUser = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                disabled={mutation.isLoading}
+                className="border rounded-lg p-2"
               />
-
+              {/* email */}
               <input
                 type="email"
                 name="email"
@@ -198,23 +157,15 @@ const AddUser = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className={`border rounded-lg p-2 focus:outline-none focus:ring-2
-                ${
-                  emailError
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-blue-400"
-                }`}
-                disabled={mutation.isLoading}
+                className="border rounded-lg p-2"
               />
-              {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
-
+              {/* designation */}
               <select
                 name="designation"
                 value={formData.designation}
                 onChange={handleChange}
                 required
-                className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
-                disabled={mutation.isLoading}
+                className="border rounded-lg p-2"
               >
                 {designations.map((designation) => (
                   <option key={designation} value={designation}>
@@ -222,14 +173,13 @@ const AddUser = () => {
                   </option>
                 ))}
               </select>
-
+              {/* department */}
               <select
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
                 required
-                className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
-                disabled={mutation.isLoading}
+                className="border rounded-lg p-2"
               >
                 {departments.map((department) => (
                   <option key={department} value={department}>
@@ -237,7 +187,7 @@ const AddUser = () => {
                   </option>
                 ))}
               </select>
-
+              {/* password */}
               <input
                 type="password"
                 name="password"
@@ -245,18 +195,9 @@ const AddUser = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className={`border rounded-lg p-2 focus:outline-none focus:ring-2
-                ${
-                  passwordError
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-blue-400"
-                }`}
-                disabled={mutation.isLoading}
+                className="border rounded-lg p-2"
               />
-              {passwordError && (
-                <p className="text-red-500 text-sm">{passwordError}</p>
-              )}
-
+              {/* confirm password */}
               <input
                 type="password"
                 name="confirmpassword"
@@ -264,35 +205,22 @@ const AddUser = () => {
                 value={formData.confirmpassword}
                 onChange={handleChange}
                 required
-                className={`border rounded-lg p-2 focus:outline-none focus:ring-2
-                ${
-                  confirmError
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-blue-400"
-                }`}
-                disabled={mutation.isLoading}
+                className="border rounded-lg p-2"
               />
-              {confirmError && (
-                <p className="text-red-500 text-sm">{confirmError}</p>
-              )}
-
+              {/* buttons */}
               <div className="flex justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-lg border px-4 py-2 text-gray-600 hover:bg-gray-100"
-                  disabled={mutation.isLoading}
+                  className="border px-4 py-2 rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-sky-500 px-4 py-2 text-white hover:bg-sky-600"
-                  disabled={
-                    mutation.isLoading || emailError || passwordError || confirmError
-                  }
+                  className="bg-sky-500 text-white px-4 py-2 rounded-lg"
                 >
-                  {mutation.isLoading ? "Creating..." : "Register"}
+                  Register
                 </button>
               </div>
             </form>
@@ -304,50 +232,42 @@ const AddUser = () => {
       <div className="mt-10 bg-white shadow-lg rounded-xl p-6 bg-cyan-500/10">
         <h3 className="text-xl font-semibold mb-4">User Accounts</h3>
         {isLoading ? (
-          <p className="text-gray-500">Loading users...</p>
+          <p>Loading users...</p>
         ) : users.length === 0 ? (
-          <p className="text-gray-500">No accounts added yet.</p>
+          <p>No accounts added yet.</p>
         ) : (
           <>
             {selectedDepartment === null ? (
-              // Department cards
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
                 {Object.keys(groupedUsers).map((dept) => (
                   <div
-                  key={dept}
-                  className={`p-[2px] rounded-xl bg-gradient-to-r ${
-                  departmentGradients[dept] || "from-gray-200 to-gray-300"
-                   }`}
+                    key={dept}
+                    className={`p-[2px] rounded-xl bg-gradient-to-r ${
+                      departmentGradients[dept] || "from-gray-200 to-gray-300"
+                    }`}
                   >
-                <div
-                onClick={() => setSelectedDepartment(dept)}
-                className={`cursor-pointer rounded-xl p-6 text-center text-white
-                shadow-lg transition transform hover:-translate-y-1 
-                border border-gray-100
-                ${dept === "HR" ? "bg-gradient-to-br from-yellow-400 to-yellow-600 animate-glow-yellow" : ""}
-                ${dept === "IT" ? "bg-gradient-to-br from-blue-500 to-blue-700 animate-glow-blue" : ""}
-                ${dept === "Finance" ? "bg-gradient-to-br from-orange-400 to-orange-600 animate-glow-orange" : ""}
-                ${dept === "Sales" ? "bg-gradient-to-br from-purple-500 to-purple-700 animate-glow-purple" : ""}`}
-                >
-                <h4 className="font-bold text-lg">{dept}</h4>
-                <p className="text-sm opacity-90">{groupedUsers[dept].length} users</p>
-                </div>
-                </div>
+                    <div
+                      onClick={() => setSelectedDepartment(dept)}
+                      className="cursor-pointer rounded-xl p-6 text-center text-white"
+                    >
+                      <h4 className="font-bold text-lg">{dept}</h4>
+                      <p>{groupedUsers[dept].length} users</p>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : (
-              // Users inside selected department
               <div>
                 <button
                   onClick={() => setSelectedDepartment(null)}
-                  className="mb-4 px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+                  className="mb-4 px-4 py-2 bg-gray-200 rounded-lg"
                 >
                   ← Back
                 </button>
                 <h3 className="text-xl font-bold mb-4">
                   {selectedDepartment} Department
                 </h3>
-                <table className="w-full border border-gray-200 rounded-lg">
+                <table className="w-full border border-gray-200">
                   <thead>
                     <tr className="bg-gray-50">
                       <th className="px-4 py-2 border">Name</th>
@@ -360,36 +280,16 @@ const AddUser = () => {
                   </thead>
                   <tbody>
                     {groupedUsers[selectedDepartment].map((user, i) => (
-                      <tr key={user.id || i} className="hover:bg-gray-50">
+                      <tr key={user.id || i}>
                         <td className="px-4 py-2 border">{user.name}</td>
                         <td className="px-4 py-2 border">{user.email}</td>
-                        <td className="px-4 py-2 border">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              user.designation === "Super Admin"
-                                ? "bg-red-100 text-red-800"
-                                : user.designation === "Admin"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {user.designation}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 border">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getDepartmentBadge(
-                              user.department
-                            )}`}
-                          >
-                            {user.department}
-                          </span>
-                        </td>
+                        <td className="px-4 py-2 border">{user.designation}</td>
+                        <td className="px-4 py-2 border">{user.department}</td>
                         <td className="px-4 py-2 border">{user.createdAt}</td>
                         <td className="px-4 py-2 border space-x-2 text-center">
-                          <button   
-                            onClick={() => updateMutation.mutate({id: user._id, updates:{name:"Edited Name"}})}
-                             className="text-blue-500 hover:text-blue-700"
+                          <button
+                            onClick={() => setEditingUser(user)} // 👈 open edit modal
+                            className="text-blue-500 hover:text-blue-700"
                           >
                             ✏️
                           </button>
@@ -400,8 +300,8 @@ const AddUser = () => {
                             🚫
                           </button>
                           <button
-                          onClick={() => deleteMutation.mutate(user._id)}
-                          className="text-red-500 hover:text-red-700"
+                            onClick={() => deleteMutation.mutate(user._id)}
+                            className="text-red-500 hover:text-red-700"
                           >
                             🗑️
                           </button>
@@ -415,6 +315,91 @@ const AddUser = () => {
           </>
         )}
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="font-bold mb-4">Edit User</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateMutation.mutate({
+                  id: editingUser._id,
+                  updates: {
+                    name: editingUser.name,
+                    email: editingUser.email,
+                    designation: editingUser.designation,
+                    department: editingUser.department,
+                  },
+                });
+              }}
+              className="flex flex-col gap-4"
+            >
+              <input
+                type="text"
+                value={editingUser.name}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, name: e.target.value })
+                }
+                className="border rounded-lg p-2"
+              />
+              <input
+                type="email"
+                value={editingUser.email}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, email: e.target.value })
+                }
+                className="border rounded-lg p-2"
+              />
+              <select
+                value={editingUser.designation}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, designation: e.target.value })
+                }
+                className="border rounded-lg p-2"
+              >
+                {designations.map((designation) => (
+                  <option key={designation} value={designation}>
+                    {designation}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={editingUser.department}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, department: e.target.value })
+                }
+                className="border rounded-lg p-2"
+              >
+                {departments.map((department) => (
+                  <option key={department} value={department}>
+                    {department}
+                  </option>
+                ))}
+              </select>
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="border px-4 py-2 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
